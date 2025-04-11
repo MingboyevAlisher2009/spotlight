@@ -1,3 +1,5 @@
+import Loader from "@/components/Loader";
+import Post from "@/components/post";
 import Story from "@/components/story";
 import { STORIES } from "@/constants/mock-data";
 import { COLORS } from "@/constants/theme";
@@ -25,7 +27,10 @@ export default function Index() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 60 }}
+      >
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -35,7 +40,10 @@ export default function Index() {
             <Story key={item.id} story={item} />
           ))}
         </ScrollView>
-       
+
+        {posts.map((post) => (
+          <Post key={post._id} post={post} />
+        ))}
       </ScrollView>
     </View>
   );
