@@ -1,12 +1,46 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { styles } from "@/styles/feed.styles";
 import { Link } from "expo-router";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/constants/theme";
+import { Id } from "@/convex/_generated/dataModel";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
-export default function Post({ post }: { post: any }) {
+interface PostType {
+  post: {
+    _id: Id<"posts">;
+    imageUrl: string;
+    caption?: string;
+    likes: number;
+    comments: number;
+    _creationTime: number;
+    isLiked: boolean;
+    isBookmarked: boolean;
+    author: {
+      _id: number;
+      username: string;
+      image: string;
+    };
+  };
+}
+
+export default function Post({ post }: PostType) {
+  const [isLiked, setisLiked] = useState(post.isLiked);
+  const [likesCount, setlikesCount] = useState(post.likes);
+
+  const toggleLike = useMutation(api.posts.toggleLike);
+
+  const handleLike = async () => {
+    try {
+      const newIsLiked = await toggleLike({ postId: post._id });
+      setisLiked(newIsLiked);
+      setlikesCount((prev) => (newIsLiked ? prev + 1 : prev - 1));
+    } catch (error) {}
+  };
+
   return (
     <View style={styles.post}>
       <View style={styles.postHeader}>
@@ -41,8 +75,12 @@ export default function Post({ post }: { post: any }) {
 
       <View style={styles.postActions}>
         <View style={styles.postActionsLeft}>
-          <TouchableOpacity>
-            <Ionicons name={"heart-outline"} size={24} color={COLORS.white} />
+          <TouchableOpacity onPress={handleLike}>
+            <Ionicons
+              name={isLiked ? "heart" : "heart-outline"}
+              size={24}
+              color={isLiked ? COLORS.primary : COLORS.white}
+            />
           </TouchableOpacity>
           <TouchableOpacity>
             <Ionicons
@@ -58,7 +96,9 @@ export default function Post({ post }: { post: any }) {
       </View>
 
       <View style={styles.postInfo}>
-        <Text style={styles.likesText}>Be the first to like</Text>
+        <Text style={styles.likesText}>
+          {likesCount ? `${likesCount} Likes` : "Be the first to like"}
+        </Text>
         {post.caption && (
           <View style={styles.captionContainer}>
             <Text style={styles.captionUsername}>{post.author.username}</Text>
