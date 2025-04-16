@@ -6,10 +6,11 @@ import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/constants/theme";
 import { Id } from "@/convex/_generated/dataModel";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import CommentsModal from "./commnets-modal";
 import { formatDistanceToNow } from "date-fns";
+import { useUser } from "@clerk/clerk-expo";
 
 interface PostType {
   post: {
@@ -31,11 +32,21 @@ interface PostType {
 
 export default function Post({ post }: PostType) {
   const [isLiked, setisLiked] = useState(post.isLiked);
+  const [isBookmarked, setisBookmarked] = useState(post.isBookmarked);
   const [likesCount, setlikesCount] = useState(post.likes);
   const [commentsCount, setCommentsCount] = useState(post.comments);
   const [showComments, setShowComments] = useState(false);
 
+  const { user } = useUser();
+
+  const currentUser = useQuery(
+    api.users.getUserByClerkId,
+    user ? { clerkId: user.id } : "skip"
+  );
+
   const toggleLike = useMutation(api.posts.toggleLike);
+  const toggleBookmarks = useMutation(api.bookmarks.toggleBookmark);
+  const deletePost = useMutation(api.posts.deletePost);
 
   const handleLike = async () => {
     try {
@@ -43,6 +54,19 @@ export default function Post({ post }: PostType) {
       setisLiked(newIsLiked);
       setlikesCount((prev) => (newIsLiked ? prev + 1 : prev - 1));
     } catch (error) {}
+  };
+
+  const handleBookmark = async () => {
+    const newIsBookmarked = await toggleBookmarks({ postId: post._id });
+    setisBookmarked(newIsBookmarked);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deletePost({ postId: post._id });
+    } catch (error) {
+      console.log("post delete error:", error);
+    }
   };
 
   return (
@@ -61,13 +85,19 @@ export default function Post({ post }: PostType) {
           </TouchableOpacity>
         </Link>
 
-        {/* <TouchableOpacity>
-          <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.white} />
-        </TouchableOpacity> */}
-
-        <TouchableOpacity>
-          <Ionicons name="trash-outline" size={20} color={COLORS.primary} />
-        </TouchableOpacity>
+        {post.author._id === currentUser?._id ? (
+          <TouchableOpacity onPress={handleDelete}>
+            <Ionicons name="trash-outline" size={20} color={COLORS.primary} />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity>
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={20}
+              color={COLORS.white}
+            />
+          </TouchableOpacity>
+        )}
       </View>
       <Image
         source={post.imageUrl}
@@ -94,8 +124,12 @@ export default function Post({ post }: PostType) {
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity>
-          <Ionicons name={"bookmark-outline"} size={22} color={COLORS.white} />
+        <TouchableOpacity onPress={handleBookmark}>
+          <Ionicons
+            name={isBookmarked ? "bookmark" : "bookmark-outline"}
+            size={22}
+            color={isBookmarked ? COLORS.primary : COLORS.white}
+          />
         </TouchableOpacity>
       </View>
 
