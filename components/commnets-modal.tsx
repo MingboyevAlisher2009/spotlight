@@ -22,14 +22,12 @@ interface CommentsType {
   postId: Id<"posts">;
   visible: boolean;
   onClose: () => void;
-  onCommnetAdded: () => void;
 }
 
 export default function CommentsModal({
   postId,
   visible,
   onClose,
-  onCommnetAdded,
 }: CommentsType) {
   const [newComment, setNewComment] = useState("");
 
@@ -43,7 +41,6 @@ export default function CommentsModal({
       await addComment({ content: newComment, postId });
 
       setNewComment("");
-      onCommnetAdded();
     } catch (error) {
       console.log(error);
     }

@@ -33,8 +33,6 @@ interface PostType {
 export default function Post({ post }: PostType) {
   const [isLiked, setisLiked] = useState(post.isLiked);
   const [isBookmarked, setisBookmarked] = useState(post.isBookmarked);
-  const [likesCount, setlikesCount] = useState(post.likes);
-  const [commentsCount, setCommentsCount] = useState(post.comments);
   const [showComments, setShowComments] = useState(false);
 
   const { user } = useUser();
@@ -52,7 +50,6 @@ export default function Post({ post }: PostType) {
     try {
       const newIsLiked = await toggleLike({ postId: post._id });
       setisLiked(newIsLiked);
-      setlikesCount((prev) => (newIsLiked ? prev + 1 : prev - 1));
     } catch (error) {}
   };
 
@@ -142,7 +139,7 @@ export default function Post({ post }: PostType) {
 
       <View style={styles.postInfo}>
         <Text style={styles.likesText}>
-          {likesCount ? `${likesCount} Likes` : "Be the first to like"}
+          {post.likes ? `${post.likes} Likes` : "Be the first to like"}
         </Text>
         {post.caption && (
           <View style={styles.captionContainer}>
@@ -151,10 +148,10 @@ export default function Post({ post }: PostType) {
           </View>
         )}
 
-        {commentsCount > 0 && (
+        {post.comments > 0 && (
           <TouchableOpacity onPress={() => setShowComments(true)}>
             <Text style={styles.commentsText}>
-              View all {commentsCount} comments
+              View all {post.comments} comments
             </Text>
           </TouchableOpacity>
         )}
@@ -168,7 +165,6 @@ export default function Post({ post }: PostType) {
         postId={post._id}
         visible={showComments}
         onClose={() => setShowComments(false)}
-        onCommnetAdded={() => setCommentsCount((prev) => prev + 1)}
       />
     </View>
   );
