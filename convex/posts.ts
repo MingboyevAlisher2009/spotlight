@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, MutationCtx, query } from "./_generated/server";
 import { getAuthenticatedUser } from "./users";
 
 export const generateUploadUrl = mutation(async (ctx) => {

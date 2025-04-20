@@ -72,7 +72,14 @@ export default function Post({ post }: PostType) {
   return (
     <View style={styles.post}>
       <View style={styles.postHeader}>
-        <Link href={"/(tabs)/notifications"}>
+        <Link
+          href={
+            currentUser?._id === post?.author?._id
+              ? "/(tabs)/profile"
+              : `/user/${post.author._id}`
+          }
+          asChild
+        >
           <TouchableOpacity style={styles.postHeaderLeft}>
             <Image
               source={post.author.image}
@@ -85,7 +92,7 @@ export default function Post({ post }: PostType) {
           </TouchableOpacity>
         </Link>
 
-        {post.author._id === currentUser?._id ? (
+        {currentUser?._id === post?.author?._id ? (
           <TouchableOpacity onPress={handleDelete}>
             <Ionicons name="trash-outline" size={20} color={COLORS.primary} />
           </TouchableOpacity>
